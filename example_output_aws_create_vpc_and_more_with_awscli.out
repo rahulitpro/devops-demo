@@ -1,0 +1,199 @@
+NEW VPC described as below
+{
+    "Vpcs": [
+        {
+            "CidrBlock": "10.10.0.0/16",
+            "DhcpOptionsId": "dopt-054c90d9050000988",
+            "State": "available",
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-07e55ef484d3289da",
+                    "CidrBlock": "10.10.0.0/16",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false
+        }
+    ]
+}
+NEW Subnet descibled as below
+{
+    "Subnets": [
+        {
+            "AvailabilityZone": "ca-central-1a",
+            "AvailabilityZoneId": "cac1-az1",
+            "AvailableIpAddressCount": 251,
+            "CidrBlock": "10.10.1.0/24",
+            "DefaultForAz": false,
+            "MapPublicIpOnLaunch": false,
+            "MapCustomerOwnedIpOnLaunch": false,
+            "State": "available",
+            "SubnetId": "subnet-0502b91d8eff9268b",
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710",
+            "AssignIpv6AddressOnCreation": false,
+            "Ipv6CidrBlockAssociationSet": [],
+            "SubnetArn": "arn:aws:ec2:ca-central-1:471112595710:subnet/subnet-0502b91d8eff9268b",
+            "EnableDns64": false,
+            "Ipv6Native": false,
+            "PrivateDnsNameOptionsOnLaunch": {
+                "HostnameType": "ip-name",
+                "EnableResourceNameDnsARecord": false,
+                "EnableResourceNameDnsAAAARecord": false
+            }
+        }
+    ]
+}
+Making subnet public so it will have public ip on new ec2 instances
+NEW Subnet descibled as below after making it public
+{
+    "Subnets": [
+        {
+            "AvailabilityZone": "ca-central-1a",
+            "AvailabilityZoneId": "cac1-az1",
+            "AvailableIpAddressCount": 251,
+            "CidrBlock": "10.10.1.0/24",
+            "DefaultForAz": false,
+            "MapPublicIpOnLaunch": true,
+            "MapCustomerOwnedIpOnLaunch": false,
+            "State": "available",
+            "SubnetId": "subnet-0502b91d8eff9268b",
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710",
+            "AssignIpv6AddressOnCreation": false,
+            "Ipv6CidrBlockAssociationSet": [],
+            "SubnetArn": "arn:aws:ec2:ca-central-1:471112595710:subnet/subnet-0502b91d8eff9268b",
+            "EnableDns64": false,
+            "Ipv6Native": false,
+            "PrivateDnsNameOptionsOnLaunch": {
+                "HostnameType": "ip-name",
+                "EnableResourceNameDnsARecord": false,
+                "EnableResourceNameDnsAAAARecord": false
+            }
+        }
+    ]
+}
+NEW Internet Gateway described as below
+{
+    "InternetGateways": [
+        {
+            "Attachments": [],
+            "InternetGatewayId": "igw-0011e517aeafb20bd",
+            "OwnerId": "471112595710",
+            "Tags": []
+        }
+    ]
+}
+Attaching Internet Gateway to NEW VPC
+NEW Internet Gateway described as below after attaching to VPC
+{
+    "InternetGateways": [
+        {
+            "Attachments": [
+                {
+                    "State": "available",
+                    "VpcId": "vpc-0c3151985edca3bf7"
+                }
+            ],
+            "InternetGatewayId": "igw-0011e517aeafb20bd",
+            "OwnerId": "471112595710",
+            "Tags": []
+        }
+    ]
+}
+NEW Route table described as below
+{
+    "RouteTables": [
+        {
+            "Associations": [],
+            "PropagatingVgws": [],
+            "RouteTableId": "rtb-0bfeb863f59789de1",
+            "Routes": [
+                {
+                    "DestinationCidrBlock": "10.10.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                }
+            ],
+            "Tags": [],
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710"
+        }
+    ]
+}
+Creating new route in route table to connect from and to internet via internet gatway 
+{
+    "Return": true
+}
+NEW Route table described as below after creating new route to internet
+{
+    "RouteTables": [
+        {
+            "Associations": [],
+            "PropagatingVgws": [],
+            "RouteTableId": "rtb-0bfeb863f59789de1",
+            "Routes": [
+                {
+                    "DestinationCidrBlock": "10.10.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                },
+                {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0011e517aeafb20bd",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                }
+            ],
+            "Tags": [],
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710"
+        }
+    ]
+}
+Associating route table to subnet so it will have public route
+NEW Route table described as below after associating with subnet
+{
+    "RouteTables": [
+        {
+            "Associations": [
+                {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-035f5198dd58ea904",
+                    "RouteTableId": "rtb-0bfeb863f59789de1",
+                    "SubnetId": "subnet-0502b91d8eff9268b",
+                    "AssociationState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "PropagatingVgws": [],
+            "RouteTableId": "rtb-0bfeb863f59789de1",
+            "Routes": [
+                {
+                    "DestinationCidrBlock": "10.10.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                },
+                {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0011e517aeafb20bd",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                }
+            ],
+            "Tags": [],
+            "VpcId": "vpc-0c3151985edca3bf7",
+            "OwnerId": "471112595710"
+        }
+    ]
+}
+Deleting the Setup
