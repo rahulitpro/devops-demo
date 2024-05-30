@@ -54,6 +54,7 @@ aws ec2 create-key-pair --key-name MyKeyPair --query 'KeyMaterial' --output text
 
 echo "Making KeyPair Private"
 chmod 600 ./MyKeyPair.pem
+ls -tlr ./MyKeyPair.pem
 
 echo "New KeyPair stored in MyKeyPair.pem file"
 cat ./MyKeyPair.pem
