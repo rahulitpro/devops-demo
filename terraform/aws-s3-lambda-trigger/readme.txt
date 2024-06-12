@@ -25,3 +25,6 @@ terraform {
         }
     }
 
+Trigger project with below example awscli command 
+
+aws s3api put-object --bucket Source_bucket_name --key SmileyFace2.jpg --body ./SmileyFace.jpg
