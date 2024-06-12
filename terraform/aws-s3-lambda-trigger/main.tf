@@ -118,4 +118,6 @@ resource "aws_s3_object" "ImagePut" {
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   # etag = "${md5(file("path/to/file"))}"
   etag = filemd5(var.aws_s3_bucket_object_source)
+
+  depends_on = [aws_lambda_function.CreateThumbnail, aws_s3_bucket_notification.bucket_notification ]
 }
