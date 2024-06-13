@@ -1,0 +1,32 @@
+---
+
+- name: install web servers
+  hosts: app
+  remote_user: rahulthakar
+  become: True
+
+  tasks:
+  - name: Ensure apache is at the latest version
+    ansible.builtin.yum:
+      name: httpd
+      state: present
+  - name: Ensure that apache is started
+    ansible.builtin.service:
+      name: httpd
+      state: started
+
+- name: install db servers
+  hosts: db
+  remote_user: rahul-thakar
+  become: True
+
+  tasks:
+  - name: Ensure postgresql is at the latest version
+    ansible.builtin.apt:
+      name: postgresql
+      state: present
+
+  - name: Ensure that postgresql is started
+    ansible.builtin.service:
+      name: postgresql
+      state: started
