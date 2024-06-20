@@ -1,28 +1,16 @@
 ---
 # tasks file for http
-- name: Ensure apache is at the latest version
-  ansible.builtin.yum:
-    name: httpd
-    state: present
-  when: ansible_distribution == 'Fedora'
-
-- name: Ensure apache is at the latest version
-  pkgng: 
-    name: apache24
-    state: present
-  when: ansible_distribution == 'FreeBSD'
+- name: Ensure apache with php is at the latest version
+  package:
+    name: 
+      - "{{ apache_package }}"
+      - "{{ php_package }}"
+    state: latest
+    update_cache: yes
 
 - name: Ensure that apache is started
   ansible.builtin.service:
-    name: httpd
+    name: "{{ apache_package }}"
     state: started
-  when: ansible_distribution == 'Fedora'
-
-- name: Ensure that apache is started
-  ansible.builtin.service:
-    name: apache24 
-    state: started
-  when: ansible_distribution == 'FreeBSD'
-
 
 

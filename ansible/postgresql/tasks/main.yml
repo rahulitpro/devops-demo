@@ -2,9 +2,10 @@
 # tasks file for postgresql
 
 - name: Ensure postgresql is at the latest version
-  ansible.builtin.apt:
+  package:
     name: postgresql
-    state: present
+    state: latest
+    update_cache: yes
 
 - name: Ensure that postgresql is started
   ansible.builtin.service:
