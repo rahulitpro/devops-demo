@@ -2,14 +2,19 @@
 
 - name: install http server
   hosts:
-    - app
-    - other
+    - apps
   become: True
   roles: 
     - http
 
 - name: install postgresql
-  hosts: db
+  hosts: dbs
   become: True
   roles: 
     - postgresql
+
+- name: install jenkins
+  hosts: others
+  become: True
+  roles: 
+    - jenkins

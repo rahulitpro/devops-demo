@@ -1,0 +1,38 @@
+---
+# tasks file for jenkins
+
+
+#repository:
+
+- name: install wget
+  package:
+    name: wget
+
+- name: setup Jenkins repo
+  shell: wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    
+- name: setup Jenkins key
+  shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+- name: Ensure jenkins is at the latest version
+  package:
+    name: 
+      - fontconfig
+      - java-17-openjdk
+      - jenkins
+    state: latest
+    update_cache: yes
+
+- name: Ensure that jenkins is started
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Open port for jenkins
+  shell: firewall-cmd --permanent --add-port=8080/tcp
+
+- name: Ensure that firewall is restarted
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted

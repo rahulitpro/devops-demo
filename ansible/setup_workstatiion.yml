@@ -1,0 +1,54 @@
+---
+
+- name: setup workstations 
+  hosts:
+    - workstations 
+  become: True
+  tasks:
+
+    - name: install git
+      tags: always
+      package:
+        name : git
+        state: latest
+
+    - name: install pip
+      tags: always
+      package:
+        name : python3-pip
+        state: latest
+
+    - name: install ansible full via pip
+      tags: always
+      shell: pip install ansible
+
+    - name : install unzip
+      tags: always
+      package:
+        name: unzip
+        state: latest
+    
+    - name : unzip awscli
+      tags: always
+      unarchive:
+        src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp
+        remote_src: yes
+        mode: 0755
+      register: aws_unzipped
+    
+    - name : install awscli
+      tags: always
+      shell: /tmp/aws/install
+      when: aws_unzipped.changed
+
+    - name: install terraform
+      tags: always
+      unarchive:
+        src: https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
+        dest: /usr/local/bin
+        remote_src: yes
+        mode: 0755
+        owner: root
+        group: root
+

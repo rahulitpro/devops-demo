@@ -3,13 +3,24 @@
 - name: Ensure apache with php is at the latest version
   package:
     name: 
-      - "{{ apache_package }}"
-      - "{{ php_package }}"
+      - httpd
+      - php
     state: latest
 
 - name: Ensure that apache is started
   ansible.builtin.service:
-    name: "{{ apache_package }}"
+    name: httpd
     state: started
+    enabled: yes
+
+- name: Open port for apache
+  shell: firewall-cmd --permanent --add-port=80/tcp
+
+- name: Ensure that firewall is restarted
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
+
+
 
 

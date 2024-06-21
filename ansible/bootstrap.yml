@@ -1,0 +1,38 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+    - name: Create ansible admin user
+      tags: always
+      user:
+        name: ansible
+
+    - name: add ssh key for ansible admin user
+      tags: always
+      authorized_key:
+        user: ansible
+        state: present
+        key: "{{ lookup('file', '/home/rthakar/.ssh/ansible.pub') }}"
+
+    - name: add sudoers file for ansible admin user (other than FreeBSD)
+      tags: always
+      copy:
+        src: sudoer_ansible
+        dest: /etc/sudoers.d/ansible
+        owner: root
+        group: root
+        mode: 0440
+      when: ansible_distribution != "FreeBSD"
+
+    - name: add sudoers file for ansible admin user (for FreeBSD)
+      tags: always
+      copy:
+        src: sudoer_ansible
+        dest: /usr/local/etc/sudoers.d/ansible
+        owner: root
+        group: wheel
+        mode: 0440
+      when: ansible_distribution == "FreeBSD"
+
