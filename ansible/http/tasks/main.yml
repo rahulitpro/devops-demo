@@ -14,12 +14,17 @@
     enabled: yes
 
 - name: Open port for apache
-  shell: firewall-cmd --permanent --add-port=80/tcp
+  firewalld:
+    service: http
+    permanent: True
+    state: enabled
+  register: fire
 
 - name: Ensure that firewall is restarted
   ansible.builtin.service:
     name: firewalld
     state: restarted
+  when: fire.changed
 
 
 

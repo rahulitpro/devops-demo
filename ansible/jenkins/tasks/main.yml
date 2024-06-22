@@ -4,15 +4,11 @@
 
 #repository:
 
-- name: install wget
-  package:
-    name: wget
-
 - name: setup Jenkins repo
-  shell: wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-    
-- name: setup Jenkins key
-  shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+  copy:
+    src:  jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+    force: no
 
 - name: Ensure jenkins is at the latest version
   package:
@@ -30,9 +26,14 @@
     enabled: yes
 
 - name: Open port for jenkins
-  shell: firewall-cmd --permanent --add-port=8080/tcp
+  firewalld:
+    port: 8080/tcp
+    permanent: true
+    state: enabled
+  register: fire
 
 - name: Ensure that firewall is restarted
   ansible.builtin.service:
     name: firewalld
     state: restarted
+  when: fire.changed

@@ -2,7 +2,10 @@
 
 - name: setup workstations 
   hosts:
-    - workstations 
+    - workstations
+    - apps
+    - dbs
+    - others
   become: True
   tasks:
 
@@ -17,10 +20,19 @@
       package:
         name : python3-pip
         state: latest
+    
+    - name: Find EXTERNALLY-MANAGED file for python for Debian based Distor
+      file:
+        path: /usr/lib/python3.11/EXTERNALLY-MANAGED
+        state: absent
+      when: ansible_os_family == "Debian"
+
 
     - name: install ansible full via pip
       tags: always
-      shell: pip install ansible
+      pip: 
+        name: ansible
+        state: latest
 
     - name : install unzip
       tags: always
@@ -34,7 +46,7 @@
         src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: /tmp
         remote_src: yes
-        mode: 0755
+        creates: /usr/local/bin/aws
       register: aws_unzipped
     
     - name : install awscli
@@ -51,4 +63,41 @@
         mode: 0755
         owner: root
         group: root
+        creates: /usr/local/bin/terraform
+
+    - name: add vscode repo for Debian based distro
+      tags: always
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        force: no
+      loop:
+        - src: packages.microsoft.gpg
+          dest: /etc/apt/keyrings/packages.microsoft.gpg
+        - src: vscode.list
+          dest: /etc/apt/sources.list.d/vscode.list
+      when: ansible_os_family == "Debian"
+
+    - name: install apt-transport-https for Debian based distro
+      tags: always
+      package:
+        name : apt-transport-https
+        state: latest
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: add vscode repo for RedHat based distro
+      tags: always
+      copy:
+        src: vscode.repo
+        dest: /etc/yum.repos.d/vscode.repo
+      when: ansible_os_family == "RedHat"   
+
+    - name: install vscode
+      tags: always
+      package:
+        name : code
+        state: latest
+        update_cache: yes
+
 
