@@ -2,8 +2,9 @@
 
 - name: setup workstations 
   hosts:
-    - all
+    - workstations 
   become: True
+  remote_user: ansible
   tasks:
 
     - name: install git
@@ -17,13 +18,22 @@
       package:
         name : python3-pip
         state: latest
-    
-    - name: Find EXTERNALLY-MANAGED file for python for Debian based Distor
-      file:
-        path: /usr/lib/python3.11/EXTERNALLY-MANAGED
-        state: absent
+
+    - name: Find EXTERNALLY-MANAGED within /usr/lib for Debian based Distro    
+      find:
+        path: /usr/lib
+        patterns: EXTERNALLY-MANAGED
+        recurse: yes
+        file_type: file
+      register: EMFile
       when: ansible_os_family == "Debian"
 
+    - name: Remove EXTERNALLY-MANAGED file for python for Debian based Distro
+      file:
+        path: "{{ item.path }}" 
+        state: absent
+      with_items: "{{ EMFile.files }}" 
+      when: ansible_os_family == "Debian"
 
     - name: install ansible full via pip
       tags: always
@@ -64,10 +74,9 @@
 
     - name: add vscode repo key for Debian based distro
       tags: always
-      get_url:
-        url: https://packages.microsoft.com/keys/microsoft.asc
-        dest: /etc/apt/keyrings/packages.microsoft.gpg
-        force: no
+      apt_key:
+        url: https://packages.microsoft.com/keys/microsoft.asc 
+        state: present
       when: ansible_os_family == "Debian"
       
     - name: add vscode repo for Debian based distro

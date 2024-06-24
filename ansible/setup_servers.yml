@@ -1,29 +1,24 @@
 ---
 
-- name: install http server
+- name: install LAMP servers
   hosts:
     - apps
   become: True
+  remote_user: ansible
   roles: 
-    - http
-
-- name: install postgresql
-  hosts: dbs
-  become: True
-  roles: 
-    - postgresql
+    - lamp
 
 - name: install jenkins
-  hosts: others
+  hosts: deployments
   become: True
+  remote_user: ansible
   roles: 
     - jenkins
 
-- name: install jenkins
+- name: install docker
   hosts: 
     - apps
-    - dbs
-    - others
   become: True
+  remote_user: ansible
   roles: 
     - docker  
