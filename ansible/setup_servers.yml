@@ -18,3 +18,12 @@
   become: True
   roles: 
     - jenkins
+
+- name: install jenkins
+  hosts: 
+    - apps
+    - dbs
+    - others
+  become: True
+  roles: 
+    - docker  

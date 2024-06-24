@@ -4,20 +4,47 @@
 
 #repository:
 
-- name: setup Jenkins repo
-  copy:
-    src:  jenkins.repo
+- name: setup Jenkins repo (RedHat)
+  get_url:
+    url:  https://pkg.jenkins.io/redhat-stable/jenkins.repo
     dest: /etc/yum.repos.d/jenkins.repo
     force: no
+  when: ansible_os_family == "RedHat"
 
-- name: Ensure jenkins is at the latest version
-  package:
+- name: setup Jenkins repo key (Debian)
+  get_url:
+    url:  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    force: no
+  when: ansible_os_family == "Debian"
+
+- name: setup Jenkins repo key (Debian)
+  copy:
+    src:  jenkins.list
+    dest: /etc/apt/sources.list.d/jenkins.list
+    force: no
+  when: ansible_os_family == "Debian"
+
+- name: Ensure jenkins is at the latest version (RedHat)
+  dnf:
     name: 
       - fontconfig
       - java-17-openjdk
       - jenkins
     state: latest
     update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure jenkins is at the latest version (Debian)
+  apt:
+    name:
+      - fontconfig
+      - openjdk-17-jre 
+      - jenkins
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
 
 - name: Ensure that jenkins is started
   ansible.builtin.service:

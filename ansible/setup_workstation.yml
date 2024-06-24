@@ -2,10 +2,7 @@
 
 - name: setup workstations 
   hosts:
-    - workstations
-    - apps
-    - dbs
-    - others
+    - all
   become: True
   tasks:
 
@@ -65,17 +62,19 @@
         group: root
         creates: /usr/local/bin/terraform
 
-    - name: add vscode repo for Debian based distro
+    - name: add vscode repo key for Debian based distro
       tags: always
-      copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
+      get_url:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        dest: /etc/apt/keyrings/packages.microsoft.gpg
         force: no
-      loop:
-        - src: packages.microsoft.gpg
-          dest: /etc/apt/keyrings/packages.microsoft.gpg
-        - src: vscode.list
-          dest: /etc/apt/sources.list.d/vscode.list
+      when: ansible_os_family == "Debian"
+      
+    - name: add vscode repo for Debian based distro
+      copy:
+        src: vscode.list
+        dest: /etc/apt/sources.list.d/vscode.list
+        force: no
       when: ansible_os_family == "Debian"
 
     - name: install apt-transport-https for Debian based distro
