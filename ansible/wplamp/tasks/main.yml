@@ -1,0 +1,176 @@
+---
+# tasks file for wplamp
+
+### Install LAMP Packages
+
+- name: Copy mysql community repo (RedHat)
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - src: files/mysql-community.repo
+      dest: /etc/yum.repos.d/mysql-community.repo
+    - src: files/RPM-GPG-KEY-mysql-2023
+      dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql-2023
+    - src: files/RPM-GPG-KEY-mysql-2022
+      dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql-2022
+  when: ansible_os_family == 'RedHat'
+
+- name: Install LAMP Packages
+  ansible.builtin.package:
+    name: "{{ lamp_packages }}"
+    state: latest
+    update_cache: yes
+  notify: 
+    - Restart apache
+    - Restart mysql
+
+- name: Start apache
+  ansible.builtin.service:
+    name: "{{ apache_service }}"
+    state: started
+    enabled: yes
+
+- name: start mysql
+  ansible.builtin.service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: yes
+
+  
+- name: Install mysqlclient (RedHat)
+  ansible.builtin.pip:
+    name: mysqlclient
+  when: ansible_os_family == 'RedHat'
+
+## Install ufw 
+
+- name: Install UFW (Debian)
+  ansible.builtin.package:
+    name: ufw
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Start firewall
+  ansible.builtin.service:
+    name: "{{ firewall_service }}"
+    state: started
+    enabled: yes
+
+## Open Firewall port 80
+- name: Open Firewall port 80 (Debian)
+  community.general.ufw:
+    rule: allow
+    port: "{{ http_port }}"
+    proto: tcp
+  notify: Restart firewall
+  when: ansible_os_family == 'Debian'
+
+- name: Open Firewall port 80 (Redhat)
+  ansible.posix.firewalld:
+    state: enabled
+    port: "{{ http_port }}/tcp"
+    permanent: yes
+  notify: Restart firewall
+  when: ansible_os_family == 'RedHat'
+
+## Configure Apache
+
+- name: Create Document root
+  file:
+    path: "/var/www/{{ http_host }}"
+    state: directory
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+    mode: '0755'
+
+- name: Set up Apache VirtualHost
+  template:
+    src: "files/apache.conf.j2"
+    dest: "{{ apache_conf_loc }}/{{ http_host }}.conf"
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+  notify: Restart apache
+
+- name: Enable the Apache2 module rewrite (Debian)
+  community.general.apache2_module:
+    state: present
+    name: rewrite
+  notify: Restart apache
+  when: ansible_os_family == 'Debian'
+
+- name: Enable the Apache2 module rewrite (RedHat)
+  copy:
+    src: "files/apache_mod_rewrite.conf"
+    dest: "/etc/httpd/conf.modules.d/100-rewrite.conf"
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+  notify: Restart apache
+  when: ansible_os_family == 'RedHat'
+
+- name: Enable new site (Debian)
+  shell: /usr/sbin/a2ensite {{ http_host }}.conf
+  notify: Restart apache
+  when: ansible_os_family == 'Debian'
+
+- name: Disable default Apache site (Debian)
+  shell: /usr/sbin/a2dissite 000-default.conf
+  notify: Restart apache
+  when: ansible_os_family == 'Debian'
+
+
+# MySQL Configuration
+- name: Set the root password (Debian)
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: '{{ login_unix_socket_loc }}'
+  when: ansible_os_family == 'Debian'
+  ignore_errors: yes
+
+- name: get temp the root password (RedHat)
+  shell: >-
+    grep 'temporary password' /var/log/mysqld.log |
+    awk '{print $NF}' | tail -n 1
+  register: temp_root_pw
+  when: ansible_os_family == 'RedHat'
+
+- name: set the root password (RedHat)
+  shell: >-
+    mysqladmin -u root
+    --password="{{ temp_root_pw.stdout }}"
+    password "{{ mysql_root_password }}"
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: Remove all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Remove the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Creates database for WordPress
+  mysql_db:
+    name: "{{ wp_mysql_db }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create MySQL user for WordPress
+  mysql_user:
+    name: "{{ wp_mysql_user }}"
+    password: "{{ wp_mysql_password }}"
+    priv: "{{ wp_mysql_db }}.*:ALL"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"

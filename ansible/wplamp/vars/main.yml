@@ -1,0 +1,9 @@
+---
+# vars file for wplamp
+
+http_port: 80
+http_host: wordpress-demo.com
+mysql_root_password: Myr00t-passw0r#-chang3it
+wp_mysql_db: wpdb
+wp_mysql_user: wpuser
+wp_mysql_password: WPuser-passw0r#-chang3it

@@ -1,0 +1,2 @@
+php_pkg: [ 'php', 'php-mysql', 'libapache2-mod-php' ]
+apache_srv: apache2

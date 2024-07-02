@@ -1,0 +1,10 @@
+
+lamp_packages: [ 'httpd', 'mysql-server', 'mysql', 'php', 'php-mysqlnd', 'php-cli', 'python3-devel', 'python3-pip' , 'mysql-community-devel', 'gcc']
+apache_service: httpd
+firewall_service: firewalld
+apache_user: apache
+apache_group: apache
+apache_conf_loc: /etc/httpd/conf.d
+apache_log_dir: /var/log/httpd
+mysql_service: mysqld
+login_unix_socket_loc: /var/lib/mysql/mysql.sock

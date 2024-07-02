@@ -1,0 +1,4 @@
+---
+# vars file for mysql
+
+mysql_root_password: MySQL-S3cur3-r00t-passw0rd

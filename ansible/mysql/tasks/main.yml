@@ -1,0 +1,44 @@
+---
+# tasks file for mysql
+
+- name: update cache
+  package:
+    update_cache: yes
+
+- name: install mysql server
+  package:
+    name: mysql-server
+    state: latest
+
+- name: install mysql client
+  package:
+    name: '{{ mysql_client_pkg }}'
+
+- name: start mysql server
+  service:
+    name: '{{ mysql_srv }}'
+    state: started
+    enabled: yes
+
+- name: Set the root password mysql
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: '{{ mysql_login_unix_socket_loc }}'
+  register: set_root_password
+  ignore_errors: yes
+
+- name: Remove all anonymous user accounts mysql
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Remove the MySQL test database mysql
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"

@@ -1,0 +1,23 @@
+---
+# tasks file for php
+
+- name: update cache
+  package:
+    update_cache: yes
+
+- name: install php
+  package:
+    name: '{{ php_pkg }}'
+    state: latest
+  register: install_php
+
+- name: copy test php page
+  copy:
+    src: files/test.php
+    dest: /var/www/html/test.php
+
+- name: Restart Apache
+  service:
+    name: '{{ apache_srv }}'
+    state: restarted
+  when: install_php.changed == True

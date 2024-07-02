@@ -1,24 +1,34 @@
 ---
 
-- name: install LAMP servers
+- name: install Apache on apps servers
   hosts:
     - apps
   become: True
   remote_user: ansible
+  vars_files:
+    - apache/vars/{{ ansible_os_family }}.yml
+    - apache/vars/main.yml
   roles: 
-    - lamp
+    - apache
 
-- name: install jenkins
-  hosts: deployments
-  become: True
-  remote_user: ansible
-  roles: 
-    - jenkins
-
-- name: install docker
-  hosts: 
+- name: install mysql on apps servers
+  hosts:
     - apps
   become: True
   remote_user: ansible
+  vars_files:
+    - mysql/vars/{{ ansible_os_family }}.yml
+    - mysql/vars/main.yml
   roles: 
-    - docker  
+    - mysql
+
+- name: install php on apps servers
+  hosts:
+    - apps
+  become: True
+  remote_user: ansible
+  vars_files:
+    - php/vars/{{ ansible_os_family }}.yml
+    - php/vars/main.yml
+  roles: 
+    - php

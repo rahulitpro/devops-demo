@@ -1,0 +1,3 @@
+mysql_client_pkg: python3-pymysql
+mysql_srv: mysql
+mysql_login_unix_socket_loc: /var/run/mysqld/mysqld.sock

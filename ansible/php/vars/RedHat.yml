@@ -1,0 +1,2 @@
+php_pkg: [ 'php', 'php-mysqlnd']
+apache_srv: httpd

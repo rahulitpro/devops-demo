@@ -1,0 +1,32 @@
+---
+# tasks file for apache
+
+- name: update cache 
+  package:
+    update_cache: yes
+
+- name: Inatall Apache
+  package: 
+    name: '{{ apache_pkg }}'
+    state: latest
+
+- name: Start Apache
+  service:
+    name: '{{ apache_pkg }}'
+    state: started
+    enabled: yes
+
+- name: Open port for apache ( RedHat Servers )
+  firewalld:
+    state: enabled
+    port: '{{ apache_port }}/tcp'
+    permanent: yes
+  register: add_port
+  when: ansible_os_family == 'RedHat'
+
+- name: Reload Firewall ( RedHat servers )
+  service:
+    name: firewalld
+    state: reloaded
+  when: ansible_os_family == 'RedHat' and add_port.changed == True
+
