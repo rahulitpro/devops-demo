@@ -1,0 +1,165 @@
+---
+# tasks file for wordpress
+
+### Configure mysql for wordpress
+
+- name: Create new databases for wordpress
+  community.mysql.mysql_db:
+    name:
+      - "{{ wordpress_db_name }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create MySQL user for WordPress
+  mysql_user:
+    name: "{{ wp_mysql_user }}"
+    password: "{{ wp_mysql_password }}"
+    priv: "{{ wordpress_db_name }}.*:ALL"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+### Configure PHP for Wordpress
+
+- name: Install PHP Extensions for Wordpress
+  package:
+    name: '{{ php_pkgs_for_wordpress }}'
+    state: latest
+  register: php_extensions
+
+- name: Restart Apache
+  service:
+    name: '{{ apache_srv }}'
+    state: restarted
+  when: php_extensions.changed == True
+
+### Apache Configuration
+
+- name: Create document root for wordpress
+  file:
+    path: "/var/www/{{ wp_host }}"
+    state: directory
+    owner: "{{ apache_owner }}"
+    group: "{{ apache_group }}"
+    mode: '0755'
+  register: doc_root
+
+- name: create sites-enabled location ( RedHat servers )
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    insertafter: "IncludeOptional conf.d/*.conf"
+    line: "IncludeOptional sites-enabled/*.conf"
+  when: ansible_os_family == 'RedHat'
+  register: site_en_loc_rhel
+
+- name: Create sites directories ( RedHat servers )
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ apache_owner }}"
+    group: "{{ apache_group }}"
+    mode: '0755'
+  loop:
+    - path: /etc/httpd/sites-available
+    - path: /etc/httpd/sites-enabled
+  when: ansible_os_family == 'RedHat'
+
+- name: Set up Apache VirtualHost
+  template:
+    src: "files/wordpress.conf.j2"
+    dest: "{{ apache_available_sites_loc }}/{{ wp_host }}.conf"
+    owner: "{{ apache_owner }}"
+    group: "{{ apache_group }}"
+  register: apc_virth
+
+- name: Enable the Apache2 module rewrite ( Debian Servers )
+  community.general.apache2_module:
+    state: present
+    name: rewrite
+  when: ansible_os_family == 'Debian'
+  register: mod_rewrite_deb
+
+- name: Enable the Apache2 module rewrite ( RedHat Servers )
+  lineinfile:
+    path: /etc/httpd/conf.modules.d/00-base.conf
+    line: "LoadModule rewrite_module modules/mod_rewrite.so"
+  when: ansible_os_family == 'RedHat'
+  register: mod_rewrite_rhel
+
+- name: Disable default Apache site
+  file:
+    path: '{{ apache_enabled_sites_loc }}/000-default.conf'
+    state: absent
+  register: dis_def_site
+
+- name: Restart Apache
+  service:
+    name: '{{ apache_srv }}'
+    state: restarted
+  when: dis_def_site.changed == True or mod_rewrite_rhel.changed == True or mod_rewrite_deb.changed == True or apc_virth.changed == True or site_en_loc_rhel.changed == True or doc_root.changed == True
+
+
+  ### Install and Configure Wordpress on apps servers
+
+- name: install tar to unarchive wordpress
+  package:
+    name: tar
+    state: present
+
+- name: Download and unpack latest WordPress
+  unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: "/tmp"
+    remote_src: yes
+    creates: "/tmp/wordpress"
+
+- name: Creates .htaccess in wordpress directory
+  file:
+    path: /tmp/wordpress/.htaccess
+    state: touch
+
+- name: Create Wordpress Config File from template
+  template:
+    src: files/wp-config-sample.php.j2
+    dest: /tmp/wordpress/wp-config.php
+
+- name: Create upgrade directory for future upgrades
+  file:
+    path: /tmp/wordpress/wp-content/upgrade
+    state: directory
+  register: upg_dir
+
+- name: Add Wordpress to apache Document root directory
+  copy:
+    remote_src: True
+    src: /tmp/wordpress
+    dest: /var/www/{{ wp_host }}/..
+    owner: "{{ apache_owner }}"
+    group: "{{ apache_group }}"
+  when: upg_dir.changed == True
+
+
+- name: Enable Wordpress Site
+  ansible.builtin.file:
+    src: '{{ apache_available_sites_loc }}/{{ wp_host }}.conf'
+    dest: '{{ apache_enabled_sites_loc }}/{{ wp_host }}.conf'
+    state: link
+    owner: "{{ apache_owner }}"
+    group: "{{ apache_group }}"
+  register: enable_wordpress
+
+- name: Restart Apache
+  service:
+    name: '{{ apache_srv }}'
+    state: restarted
+  when: enable_wordpress.changed == True 
+
+- name: Remove wordpress temp directory
+  file:
+    path: /tmp/wordpress
+    state: absent
+
+
+
+

@@ -1,0 +1,9 @@
+apache_srv: httpd
+
+php_pkgs_for_wordpress: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-soap', 'php-intl', 'php-zip']
+
+apache_owner: apache
+apache_group: apache
+apache_log_dir: /var/log/httpd
+apache_available_sites_loc: /etc/httpd/sites-available
+apache_enabled_sites_loc: /etc/httpd/sites-enabled

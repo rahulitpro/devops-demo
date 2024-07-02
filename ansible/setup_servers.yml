@@ -32,3 +32,14 @@
     - php/vars/main.yml
   roles: 
     - php
+
+- name: Setup Wordpress on apps servers
+  hosts:
+    - apps
+  become: True
+  remote_user: ansible
+  vars_files:
+    - wordpress/vars/{{ ansible_os_family }}.yml
+    - wordpress/vars/main.yml
+  roles: 
+    - wordpress

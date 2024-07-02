@@ -1,0 +1,10 @@
+---
+# vars file for wordpress
+
+mysql_root_password: MySQL-S3cur3-r00t-passw0rd
+wordpress_db_name: wordpressdb
+wp_mysql_user: wpuser
+wp_mysql_password: WPUs3r-S3cur3-Passw0rd
+
+wp_host: wordpress
+wp_port: 80
