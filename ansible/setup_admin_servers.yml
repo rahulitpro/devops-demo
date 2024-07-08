@@ -1,0 +1,12 @@
+---
+
+- name: Setup Jenkins server on admin servers
+  hosts:
+    - admins
+  become: True
+  remote_user: ansible
+  vars_files:
+    - jenkins/vars/{{ ansible_os_family }}.yml
+    - jenkins/vars/main.yml
+  roles: 
+    - jenkins

@@ -1,0 +1,5 @@
+---
+# vars file for jenkinsagents
+
+
+jenkins_user: jenkins

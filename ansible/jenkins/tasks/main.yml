@@ -1,0 +1,14 @@
+---
+# tasks file for jenkins
+
+### this for Debian Servers only
+
+- include_tasks: "{{ check_debian }}"
+  with_first_found:
+   - "files/{{ ansible_os_family }}.yml"
+  loop_control:   
+    loop_var: check_debian
+ 
+
+- import_tasks: files/install_jenkins_Debian.yml
+

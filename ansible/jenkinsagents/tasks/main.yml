@@ -1,0 +1,38 @@
+---
+# tasks file for jenkinsagents
+
+
+- name: Create Jenkins User
+  user:
+    name: '{{ jenkins_user }}'
+
+- name: create .ssh directory in Jenkins User
+  file:
+    path: /home/{{ jenkins_user }}/.ssh
+    state: directory
+    owner: '{{ jenkins_user }}'
+    group: '{{ jenkins_user }}'
+    mode: 0755
+
+- name: Copy Admin server Jenkins public key
+  copy:
+    src: files/{{ jenkins_user }}.pub
+    dest: /home/{{ jenkins_user }}/.ssh/authorized_keys
+    owner: '{{ jenkins_user }}'
+    group: '{{ jenkins_user }}'
+    mode: 0755
+
+- name: give Jenkins user sudo access
+  template:
+    src: sudoer_{{ jenkins_user }}.j2
+    dest: /etc/sudoers.d/{{ jenkins_user }}        
+    owner: root
+    group: root
+    mode: 0440
+
+- name: install java for jenkins
+  package:
+    name: '{{ jave_pkg_name }}'
+    state: latest
+    update_cache: yes
+

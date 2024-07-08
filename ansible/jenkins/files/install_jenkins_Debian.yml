@@ -1,0 +1,48 @@
+- name: Setup Jenkins repo
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - src: files/jenkins.io-2023.key
+      dest: /usr/share/keyrings/jenkins-keyring.asc
+    - src: files/jenkins.list
+      dest: /etc/apt/sources.list.d/jenkins.list
+
+- name: install Jenkins Server
+  package:
+    name: [ 'jenkins', 'fontconfig', 'openjdk-17-jre' ]
+    update_cache: yes
+
+- name: Start and enabled jenkins service
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Install python3-bcrypt module
+  package:
+    name: python3-bcrypt
+    state: latest
+
+- name: Create Jenkins user
+  user:
+    name : '{{ jenkins_username }}'
+
+- name: Create .ssh directory under jenkins user
+  file:
+    path: /var/lib/{{ jenkins_username }}/.ssh
+    state: directory
+    owner: '{{ jenkins_username }}'
+    group: '{{ jenkins_username }}'
+    mode: 0755
+
+- name: create Jenkins user Passphrase
+  community.crypto.openssh_keypair:
+    path: /var/lib/{{ jenkins_username }}/.ssh/{{ jenkins_private_id_file_name }}
+    passphrase: '{{ Jenkinks_user_sshkey_passphrase }}'
+    type: ed25519
+    owner: '{{ jenkins_username }}'
+    group: '{{ jenkins_username }}'
+    mode: 0700
+
+

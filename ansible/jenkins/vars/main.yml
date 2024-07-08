@@ -1,0 +1,7 @@
+---
+# vars file for jenkins
+
+
+jenkins_username: jenkins
+jenkins_private_id_file_name: jenkins
+Jenkinks_user_sshkey_passphrase: Sup3rS3cr3tPassphras3
