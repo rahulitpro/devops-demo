@@ -1,0 +1,41 @@
+---
+# tasks file for docker
+
+
+- name: setup repository for docker (RedHat Servers)
+  get_url:
+    url: https://download.docker.com/linux/rhel/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    force: no
+  when: ansible_os_family == "RedHat"
+
+- name: setup repository key for docker (Debian Servers)
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: setup repository for docker (Debian Servers)
+  copy:
+    src: files/docker.list
+    dest: /etc/apt/sources.list.d/docker.list
+    force: no
+  when: ansible_os_family == "Debian"
+
+
+- name: Update Cache and install docker
+  package:
+    name:
+      - docker-ce 
+      - docker-ce-cli 
+      - containerd.io 
+      - docker-buildx-plugin 
+      - docker-compose-plugin
+    state: latest
+    update_cache: yes
+
+- name: Ensure that docker server is started
+  service:
+    name: docker
+    state: started
+    enabled: yes
