@@ -1,0 +1,15 @@
+---
+# tasks file for disableselinuxredhat
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  ansible.posix.selinux:
+    policy: targeted
+    state: permissive
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes

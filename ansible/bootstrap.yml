@@ -21,6 +21,9 @@
       copy:
         src: /home/$USER/.ssh/ansible.pub
         dest: /home/ansible/.ssh/authorized_keys
+        owner: ansible
+        group: ansible
+        mode: 0440
 
     - name: add sudoers file for ansible admin user
       tags: always

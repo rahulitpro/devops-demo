@@ -1,5 +1,16 @@
 ---
 
+- name: Disable SELinux for RedHat Servers
+  hosts:
+    - admins
+  become: True
+  remote_user: ansible
+  vars_files:
+    - disableselinuxredhat/vars/{{ ansible_os_family }}.yml
+    - disableselinuxredhat/vars/main.yml
+  roles: 
+    - disableselinuxredhat
+
 - name: Setup Jenkins server on admin servers
   hosts:
     - admins
@@ -10,3 +21,25 @@
     - jenkins/vars/main.yml
   roles: 
     - jenkins
+
+- name: Setup Docker on admin servers
+  hosts:
+    - admins
+  become: True
+  remote_user: ansible
+  vars_files:
+    - docker/vars/{{ ansible_os_family }}.yml
+    - docker/vars/main.yml
+  roles: 
+    - docker
+
+- name: Install Kubernetes on admin servers
+  hosts:
+    - admins
+  become: True
+  remote_user: ansible
+  vars_files:
+    - kubernetes/vars/{{ ansible_os_family }}.yml
+    - kubernetes/vars/main.yml
+  roles: 
+    - kubernetes

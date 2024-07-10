@@ -1,5 +1,16 @@
 ---
 
+- name: Disable SELinux for RedHat Servers
+  hosts:
+    - apps
+  become: True
+  remote_user: ansible
+  vars_files:
+    - disableselinuxredhat/vars/{{ ansible_os_family }}.yml
+    - disableselinuxredhat/vars/main.yml
+  roles: 
+    - disableselinuxredhat
+
 - name: install Apache on apps servers
   hosts:
     - apps

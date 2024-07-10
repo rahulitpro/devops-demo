@@ -1,0 +1,66 @@
+---
+# tasks file for kubernetes
+
+
+- name: setup repository key for kubernetes (Debian Servers)
+  copy:
+    src: files/kubernetes-apt-keyring.gpg
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: setup repository for kubernetes (Debian Servers)
+  copy:
+    src: files/kubernetes.list
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    force: no
+  when: ansible_os_family == "Debian"
+
+- name: setup repository for kubernetes (RedHat Servers)
+  copy:
+    src: kubernetes/files/kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+    force: no
+  when: ansible_os_family == "RedHat"
+
+- name: Install Kubernetes ( Debian Servers )
+  apt:
+    name: [ 'kubelet', 'kubeadm', 'kubectl' ]
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
+
+- name: Hold kubernetes packages ( Debian Servers )
+  dpkg_selections:
+    name: '{{ item.name }}'
+    selection: hold
+  loop:
+    - name: kubelet
+    - name: kubeadm
+    - name: kubectl
+  when: ansible_os_family == 'Debian'
+
+- name: Install Kubernetes ( RedHat Servers )
+  dnf:
+    name: [ 'kubelet', 'kubeadm', 'kubectl' ]
+    state: latest
+    disable_excludes: kubernetes
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
+- name: start and enable kubelet
+  service:
+    name: kubelet
+    state: started
+    enabled: yes
+
+- name: install cri-dockerd ( Debian Servers )
+  apt:
+    deb: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd_0.3.14.3-0.debian-bookworm_amd64.deb
+  when: ansible_os_family == 'Debian'
+
+
+- name: install cri-dockerd ( RedHat Servers )
+  dnf:
+    name: 'https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd-0.3.14-3.el8.x86_64.rpm'
+    state: present
+  when: ansible_os_family == 'RedHat'
